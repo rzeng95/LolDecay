@@ -1,0 +1,20 @@
+{
+  "name": "LolDecay",
+  "author": "Roland Zeng <roland.zeng@gmail.com>",
+  "version": "0.0.1",
+  "description": "Returns days until decay for League of Legends account",
+  "dependencies":
+  {
+    "request": "latest",
+    "express": "latest",
+    "jade": "latest",
+    "body-parser": "latest",
+    "moment": "latest",
+    "moment-range": "latest",
+    "limiter": "latest",
+    "iconv-lite": "latest"
+  },
+  "engines": {
+	  "node": "0.12.7"
+  }
+}
