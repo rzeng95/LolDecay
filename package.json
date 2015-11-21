@@ -14,7 +14,8 @@
     "limiter": "latest",
     "iconv-lite": "latest",
     "nodemailer": "latest",
-    "mongoose": "latest"
+    "mongoose": "latest",
+    "cron": "latest"
   },
   "engines": {
 	  "node": "0.12.7"

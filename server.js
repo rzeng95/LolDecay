@@ -6,6 +6,9 @@ app.set('view engine', 'jade');
 app.set('port', (process.env.PORT || 5000));
 app.use(express.static('public'));
 
+var CronJob = require('cron').CronJob;
+
+
 var RateLimiter = require('limiter').RateLimiter;
 var limiter = new RateLimiter(1, 120);
 
@@ -28,6 +31,7 @@ db.on('error', console.error.bind(console, 'connection error:'));
 var PlayerSchema = mongoose.Schema({
   summoner_id: String,
   account_name: String,
+  account_region: String,
   email: String,
   days_left: Number
 })
@@ -48,7 +52,7 @@ var transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
         user: 'loldecay.alerts@gmail.com',
-        pass: process.env.emailpassword
+        pass: process.env.emailpassword 
     }
 }, {
     from: 'LoLDecay <loldecay.alerts@gmail.com>'
@@ -61,14 +65,6 @@ transporter.sendMail({
 
 })
 */
-
-
-
-
-
-
-
-
 
 
 app.get('/', function (req, res) {
@@ -365,6 +361,7 @@ app.post('/notify',function(req,res) {
                           var pl = new Player();
 
                           pl.account_name = summonerNameRegion;
+                          pl.account_region = REGION;
                           pl.email = EMAIL;
                           pl.days_left = daysTillDecay;
                           pl.summoner_id = summonerID;
@@ -373,12 +370,24 @@ app.post('/notify',function(req,res) {
                               res.render('verify', {o_msg:'Unexpected error: Data not saved. Please contact creator.'});
                             else {
                               console.log('saved to db successfully');
-                              message = 'Success!';
+                              console.log(summonerNameRegion +' ' + REGION + ' ' + summonerID + ' ' + daysTillDecay + ' ' + EMAIL);
+                              //message = 'Success!';
 
-                              message4 = 'Successfully linked ' + summonerNameRegion + ' to ' + EMAIL + '.';
-                              message2 = 'You will receive a confirmation email soon. ';
-                              message3 = 'To cancel alerts, see link on incoming email(s). '
-                              res.render('verify', {o_msg:message, o_msg2:message2, o_msg3:message3, m1:summonerNameRegion, m2:EMAIL, success:true});
+                              //message4 = 'Successfully linked ' + summonerNameRegion + ' to ' + EMAIL + '.';
+                              //message2 = 'You will receive a confirmation email soon. ';
+                              //message3 = 'To cancel alerts, see link on incoming email(s). ';
+
+                              msg = 'This is an automated message. \n\nAccount: ' + summonerNameRegion + '\nDays until decay: ' + daysTillDecay + '\n\nYou will be reminded when you are within five days of decay.'
+
+                              transporter.sendMail({
+                                to: EMAIL,
+                                subject:'LoLDecay Alerts enabled',
+                                text: msg
+
+                              })
+
+
+                              res.render('verify', {o_msg:message, m1:summonerNameRegion, m2:EMAIL, success:true});
                             }
                           });
 
@@ -436,9 +445,194 @@ app.get('/about',function (req, res) {
 })
 
 
-function decayValidation(name,region,callback){
+function decayCheck(id, region, callback){
+  //any input that goes in here will be a valid ranked account
 
+  //first have to check the current ranking (for example, if master dropped into diamond)
+
+  var URL1 = 'https://' + region + '.api.pvp.net/api/lol/' + region + '/v' + leagueVersion + '/league/by-summoner/' + id + '/entry?api_key=' + API_KEY;
+  //console.log(URL1);
+
+  makeRequest(URL1, function(code, resp){
+    //console.log(code);
+    //console.log(resp);
+
+    switch(code) {
+      case -1:
+        var summonerTier = resp[id]['0']['tier'];
+        var URL2 = 'https://' + region + '.api.pvp.net/api/lol/' + region + '/v' + matchListVersion + '/matchlist/by-summoner/' + id + '?rankedQueues=RANKED_SOLO_5x5&beginIndex=0&endIndex=1&api_key=' + API_KEY;
+        //console.log(URL2);
+        makeRequest(URL2, function(code, resp) {
+          switch (code) {
+            case -1:
+              var lastPlayedDate = resp['matches'][0]['timestamp'];
+
+              var date = new Date (lastPlayedDate);
+              var date2 = new Date ();
+
+              var daterange = moment.range(date, date2);
+              var diff = daterange.diff('days');
+              var daysTillDecay;
+              if (summonerTier == "MASTER" || summonerTier == "CHALLENGER") {
+                daysTillDecay = 9 - diff;
+              }
+              else {
+                daysTillDecay = 27 - diff;
+              }
+              callback(-1,daysTillDecay)
+              break;
+            default:
+              console.log('fatal error. no idea what happened but we\'re not going to return anything.');
+              callback(99);
+          } //end of switch for url2
+        });
+        break;
+      default:
+        console.log('fatal error. no idea what happened but we\'re not going to return anything.');
+        callback(99);
+    } // end of switch for first makerequest
+
+
+  });
+
+  var URL2 = 'https://' + region + '.api.pvp.net/api/lol/' + region + '/v' + matchListVersion + '/matchlist/by-summoner/' + id + '?rankedQueues=RANKED_SOLO_5x5&beginIndex=0&endIndex=1&api_key=' + API_KEY;
+  makeRequest(URL2, function(code, resp) {
+
+
+  });
 }
+/*
+
+Player.find(function(err,match) {
+  if(err)
+    console.log('fatal error. nothing will happen.');
+  else {
+    var i = 0;
+    while (match[i] !== undefined) {
+
+      (function(x) {
+        var accID = match[x]['summoner_id'];
+        var accRegion = match[x]['account_region'];
+
+        decayCheck(accID, accRegion, function(code,res){
+          //console.log(code);
+          switch(code) {
+            case -1:
+              //console.log(match[x]['account_name'] + ' == ' + match[x]['days_left']);
+              //match[x]['days_left'] = 99;
+              Player.findOne({'summoner_id': accID}, function(err,match){
+                if (code == -1) {
+                  match.days_left = res;
+
+                  match.save(function (err) {
+                    if(err)
+                      console.log('could not save new decay time for existing account');
+                    else {
+                      console.log('decay time updated for account : ' + match.account_name + '. New: ' + match.days_left);
+
+                      if (match.days_left <= 5) {
+                          //send email
+                      }
+
+
+
+                    }
+                  });
+                }
+                else {
+                  console.log('error in decaytimer function. response code: ' + code);
+                }
+
+              });
+
+              break;
+            default:
+              console.log('something bad happened. we shouldn\'t be here');
+          }
+        });
+      })(i);
+      i++;
+    }
+
+  }
+});
+
+*/
+
+var job = new CronJob('00 00 0 * * *', function() {
+  console.log('Running daily job -- ');
+
+  Player.find(function(err,match) {
+    if(err)
+      console.log('fatal error. nothing will happen.');
+    else {
+      var i = 0;
+      while (match[i] !== undefined) {
+
+        (function(x) {
+          var accID = match[x]['summoner_id'];
+          var accRegion = match[x]['account_region'];
+
+          decayCheck(accID, accRegion, function(code,res){
+            //console.log(code);
+            switch(code) {
+              case -1:
+                //console.log(match[x]['account_name'] + ' == ' + match[x]['days_left']);
+                //match[x]['days_left'] = 99;
+                Player.findOne({'summoner_id': accID}, function(err,match){
+                  if (code == -1) {
+                    match.days_left = res;
+
+                    match.save(function (err) {
+                      if(err)
+                        console.log('could not save new decay time for existing account');
+                      else {
+                        console.log('decay time updated for account : ' + match.account_name + '. New: ' + match.days_left);
+                        /*
+                        if (match.days_left > 0) {
+                            //send email
+
+                        }
+                        */
+                        msg = 'This is an automated message.\n\nAccount: ' + match.account_name + '\n\nDays until decay: ' + match.days_left;
+                        transporter.sendMail({
+                          to: 'roland.zeng@gmail.com',
+                          subject:'hi',
+                          text: msg
+
+                        })
+
+
+
+                      }
+                    });
+                  }
+                  else {
+                    console.log('error in decaytimer function. response code: ' + code);
+                  }
+
+                });
+
+                break;
+              default:
+                console.log('something bad happened. we shouldn\'t be here');
+            }
+          });
+        })(i);
+        i++;
+      }
+
+    }
+  });
+
+
+
+}, function() {
+  console.log('cron job stopped');
+},
+true,
+'America/Los_Angeles'
+);
 
 
 
