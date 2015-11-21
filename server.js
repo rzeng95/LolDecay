@@ -371,24 +371,17 @@ app.post('/notify',function(req,res) {
                             else {
                               console.log('saved to db successfully');
                               console.log(summonerNameRegion +' ' + REGION + ' ' + summonerID + ' ' + daysTillDecay + ' ' + EMAIL);
-                              //message = 'Success!';
 
-                              //message4 = 'Successfully linked ' + summonerNameRegion + ' to ' + EMAIL + '.';
-                              //message2 = 'You will receive a confirmation email soon. ';
-                              //message3 = 'To cancel alerts, see link on incoming email(s). ';
                               var delete_link="http://www.loldecay.com/delete/" + (pl._id).toString();
                               console.log(delete_link);
-                              /*
-                              msg = 'This is an automated message. \n\nAccount: ' + summonerNameRegion + '\nDays until decay: ' + daysTillDecay + '\n\nYou will be reminded when you are within five days of decay.'
-                              */
 
-                              html =
-                              "<h3>This is an automated message.</h3>" +
+                              var html =
+                              "<h4>This is an automated message.</h4>" +
+                              "<p>Click <a href=" + delete_link + ">here</a> to unsubscribe from notifications.</p>" + 
                               "<br><p>Account name: " + summonerNameRegion + "</p>" +
                               "<p>Days until decay: " + daysTillDecay + "</p>" +
-                              "<br><p>You will be reminded when you are within five days of decay.</p>" +
+                              "<br><p>You will be reminded when you are within five days of decay.</p>";
 
-                              "<br><p>Click <a href=" + delete_link + ">here</a> to unsubscribe from notifications.</p>";
 
                               transporter.sendMail({
                                 to: EMAIL,
