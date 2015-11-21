@@ -52,7 +52,7 @@ var transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
         user: 'loldecay.alerts@gmail.com',
-        pass: process.env.emailpassword 
+        pass: process.env.emailpassword
     }
 }, {
     from: 'LoLDecay <loldecay.alerts@gmail.com>'
@@ -353,7 +353,7 @@ app.post('/notify',function(req,res) {
                           else {
                             daysTillDecay = 27 - diff;
                           }
-
+                          if (daysTillDecay <= 0) daysTillDecay = 0;
                           //info to store in DB: summoner ID, email, summonerNameRegion, daysTillDecay
 
                           //first, search if the email we want is already in the db.
@@ -376,14 +376,24 @@ app.post('/notify',function(req,res) {
                               //message4 = 'Successfully linked ' + summonerNameRegion + ' to ' + EMAIL + '.';
                               //message2 = 'You will receive a confirmation email soon. ';
                               //message3 = 'To cancel alerts, see link on incoming email(s). ';
-
+                              var delete_link="http://www.loldecay.com/delete/" + (pl._id).toString();
+                              console.log(delete_link);
+                              /*
                               msg = 'This is an automated message. \n\nAccount: ' + summonerNameRegion + '\nDays until decay: ' + daysTillDecay + '\n\nYou will be reminded when you are within five days of decay.'
+                              */
+
+                              html =
+                              "<h3>This is an automated message.</h3>" +
+                              "<br><p>Account name: " + summonerNameRegion + "</p>" +
+                              "<p>Days until decay: " + daysTillDecay + "</p>" +
+                              "<br><p>You will be reminded when you are within five days of decay.</p>" +
+
+                              "<br><p>Click <a href=" + delete_link + ">here</a> to unsubscribe from notifications.</p>";
 
                               transporter.sendMail({
                                 to: EMAIL,
                                 subject:'LoLDecay Alerts enabled',
-                                text: msg
-
+                                html: html
                               })
 
 
@@ -444,6 +454,18 @@ app.get('/about',function (req, res) {
   res.render('about');
 })
 
+app.get('/delete/:obj_id', function(req,res) {
+  var query = {'_id' : req.params.obj_id};
+
+  Player.remove(query, function(err,result) {
+    if (err)
+      console.log("error deleting a player");
+    else {
+      console.log('player deleted');
+      res.render('delete');
+    }
+  });
+})
 
 function decayCheck(id, region, callback){
   //any input that goes in here will be a valid ranked account
@@ -479,6 +501,8 @@ function decayCheck(id, region, callback){
               else {
                 daysTillDecay = 27 - diff;
               }
+              if (daysTillDecay < 0) daysTillDecay = 0;
+
               callback(-1,daysTillDecay)
               break;
             default:
@@ -501,6 +525,7 @@ function decayCheck(id, region, callback){
 
   });
 }
+
 /*
 
 Player.find(function(err,match) {
