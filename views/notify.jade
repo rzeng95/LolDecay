@@ -1,0 +1,42 @@
+extends ./infopages.jade
+
+block title
+  h1(class="ui header" style="font-size:30px;") Notify
+
+block message 
+
+  p(style="font-size:18") Enter your email to receive automatic alerts!
+  br
+
+  div(class="ui grid")
+    div(class="row")
+      div(class="seven wide column")
+        form(class="ui form" method="post")
+        
+          div(class="fields")
+            div(class="eleven wide field")
+              div(class="ui left icon input")
+                input(type="text" name="register_name" placeholder="Summoner name")
+                i(class="user icon")
+            div(class="five wide field")
+              select(class="ui fluid dropdown" name="register_region")
+                option(value="na") NA
+                option(value="euw") EUW
+                option(value="eune") EUNE
+                option(value="kr") KR
+                option(value="br") BR
+                option(value="tr") TR
+                option(value="ru") RU
+                option(value="lan") LAN
+                option(value="las") LAS
+                option(value="oce") OCE
+                
+          div(class="field")
+            div(class="ui left icon input")
+              input(type="text" name="register_email" placeholder="Enter your email")
+              i(class="mail icon")
+
+          div(class="ui fluid submit button" name="submit") Submit
+          div(class="ui error message")
+          
+    

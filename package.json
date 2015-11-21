@@ -12,7 +12,9 @@
     "moment": "latest",
     "moment-range": "latest",
     "limiter": "latest",
-    "iconv-lite": "latest"
+    "iconv-lite": "latest",
+    "nodemailer": "latest",
+    "mongoose": "latest"
   },
   "engines": {
 	  "node": "0.12.7"

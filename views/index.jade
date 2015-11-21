@@ -9,7 +9,7 @@ block content
           div(class="ui form")
             div(class="ui center aligned grid")
               div(class="row")
-                div(class="grey two wide column")
+                div(class="black two wide column" style="background-color: #1B1C1D;")
                   select(class="ui fluid dropdown" name="input_region")
                     option(value="na") NA
                     option(value="euw") EUW
@@ -21,9 +21,9 @@ block content
                     option(value="lan") LAN
                     option(value="las") LAS
                     option(value="oce") OCE
-                div(class="grey four wide column")
+                div(class="black four wide column")
                   input(type="text" name="input_summoner" placeholder="Summoner Name")
-                div(class="grey two wide column")
+                div(class="black two wide column")
                   button(class="ui button" type="submit") Search  
   
 
@@ -34,6 +34,7 @@ block content
           div(class="row")
             div(class="two wide column")
               img(src="#{o_img}")
+                
             div(class="left aligned six wide column")
               h2!= o_name
               h3!= o_rank   
