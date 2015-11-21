@@ -377,7 +377,7 @@ app.post('/notify',function(req,res) {
 
                               var html =
                               "<h4>This is an automated message.</h4>" +
-                              "<p>Click <a href=" + delete_link + ">here</a> to unsubscribe from notifications.</p>" + 
+                              "<p>Click <a href=" + delete_link + ">here</a> to unsubscribe from further notifications.</p>" +
                               "<br><p>Account name: " + summonerNameRegion + "</p>" +
                               "<p>Days until decay: " + daysTillDecay + "</p>" +
                               "<br><p>You will be reminded when you are within five days of decay.</p>";
@@ -519,64 +519,6 @@ function decayCheck(id, region, callback){
   });
 }
 
-/*
-
-Player.find(function(err,match) {
-  if(err)
-    console.log('fatal error. nothing will happen.');
-  else {
-    var i = 0;
-    while (match[i] !== undefined) {
-
-      (function(x) {
-        var accID = match[x]['summoner_id'];
-        var accRegion = match[x]['account_region'];
-
-        decayCheck(accID, accRegion, function(code,res){
-          //console.log(code);
-          switch(code) {
-            case -1:
-              //console.log(match[x]['account_name'] + ' == ' + match[x]['days_left']);
-              //match[x]['days_left'] = 99;
-              Player.findOne({'summoner_id': accID}, function(err,match){
-                if (code == -1) {
-                  match.days_left = res;
-
-                  match.save(function (err) {
-                    if(err)
-                      console.log('could not save new decay time for existing account');
-                    else {
-                      console.log('decay time updated for account : ' + match.account_name + '. New: ' + match.days_left);
-
-                      if (match.days_left <= 5) {
-                          //send email
-                      }
-
-
-
-                    }
-                  });
-                }
-                else {
-                  console.log('error in decaytimer function. response code: ' + code);
-                }
-
-              });
-
-              break;
-            default:
-              console.log('something bad happened. we shouldn\'t be here');
-          }
-        });
-      })(i);
-      i++;
-    }
-
-  }
-});
-
-*/
-
 var job = new CronJob('00 00 0 * * *', function() {
   console.log('Running daily job -- ');
 
@@ -606,21 +548,39 @@ var job = new CronJob('00 00 0 * * *', function() {
                         console.log('could not save new decay time for existing account');
                       else {
                         console.log('decay time updated for account : ' + match.account_name + '. New: ' + match.days_left);
-                        /*
-                        if (match.days_left > 0) {
-                            //send email
+                        var delete_link="http://www.loldecay.com/delete/" + (match._id).toString();
+                        var html;
+
+                        if (match.days_left <= 5 && match.days_left > 0) {
+                          html =
+                              "<h4>This is an automated message.</h4>" +
+                              "<p>Click <a href=" + delete_link + ">here</a> to unsubscribe from further notifications.</p>" +
+                              "<br><p>Account name: " + match.account_name + " has " + match.days_left + " days left until decay - Go play a game!</p>";
+                          transporter.sendMail({
+                            to: match.email,
+                            subject:'LolAlert - Account decaying soon!',
+                            html: html
+                          });
+                        }
+                        if (match.days_left == 0) {
+                          html =
+                              "<h4>This is an automated message.</h4>" +
+                              "<p>Click <a href=" + delete_link + ">here</a> to unsubscribe from further notifications.</p>" +
+                              "<br><p>Account name: " + match.account_name + " is already decaying! Go play a game!</p>";
+                              transporter.sendMail({
+                                to: match.email,
+                                subject:'LolAlert - Account decaying now!',
+                                html: html
+                              });
 
                         }
-                        */
-                        msg = 'This is an automated message.\n\nAccount: ' + match.account_name + '\n\nDays until decay: ' + match.days_left;
+                
+                        msg = 'This is an automated message.\nAccount: ' + match.account_name + '\nDays until decay: ' + match.days_left;
                         transporter.sendMail({
                           to: 'roland.zeng@gmail.com',
-                          subject:'hi',
+                          subject:'Daily roll call',
                           text: msg
-
-                        })
-
-
+                        });
 
                       }
                     });
@@ -643,13 +603,11 @@ var job = new CronJob('00 00 0 * * *', function() {
     }
   });
 
-
-
-}, function() {
-  console.log('cron job stopped');
-},
-true,
-'America/Los_Angeles'
+  }, function() {
+    console.log('cron job stopped');
+  },
+  true,
+  'America/Los_Angeles'
 );
 
 
