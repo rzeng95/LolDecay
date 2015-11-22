@@ -574,7 +574,7 @@ var job = new CronJob('00 00 0 * * *', function() {
                               });
 
                         }
-                
+
                         msg = 'This is an automated message.\nAccount: ' + match.account_name + '\nDays until decay: ' + match.days_left;
                         transporter.sendMail({
                           to: 'roland.zeng@gmail.com',
