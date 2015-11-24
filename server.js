@@ -555,7 +555,7 @@ var job = new CronJob('00 00 0 * * *', function() {
                           html =
                               "<h4>This is an automated message.</h4>" +
                               "<p>Click <a href=" + delete_link + ">here</a> to unsubscribe from further notifications.</p>" +
-                              "<br><p>Account name: " + match.account_name + " has " + match.days_left + " days left until decay - Go play a game!</p>";
+                              "<br><p>" + match.account_name + " has " + match.days_left + " days left until decay - Go play a game!</p>";
                           transporter.sendMail({
                             to: match.email,
                             subject:'LolAlert - Account decaying soon!',
@@ -566,7 +566,7 @@ var job = new CronJob('00 00 0 * * *', function() {
                           html =
                               "<h4>This is an automated message.</h4>" +
                               "<p>Click <a href=" + delete_link + ">here</a> to unsubscribe from further notifications.</p>" +
-                              "<br><p>Account name: " + match.account_name + " is already decaying! Go play a game!</p>";
+                              "<br><p>" + match.account_name + " is already decaying! Go play a game!</p>";
                               transporter.sendMail({
                                 to: match.email,
                                 subject:'LolAlert - Account decaying now!',
