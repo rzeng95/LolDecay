@@ -57,14 +57,22 @@ var transporter = nodemailer.createTransport({
 }, {
     from: 'LoLDecay <loldecay.alerts@gmail.com>'
 });
-/*
-transporter.sendMail({
-  to: 'roland.zeng@gmail.com',
-  subject:'hi',
-  text:'hello world'
 
-})
+/*
+  3 API calls are made, with each one off the limiter.
+  (1) The first API call takes in the summoner name and region and searches for the summoner ID
+  (2) The second API call takes in the summoner ID from (1) and finds the summoner's rank
+  (3) The third API call takes in the summoner ID from (1) and finds the summoner's most recent team builder 5v5 ranked game
+
+  Then, the current date is calculated and 27 (should be 28, but I'm rounding to a more conservative date) or 14 is subtracted from it,depending on the summoner's rank calculated in (2)
+
+  This is then returned to the page along with the user's current rank and summoner profile icon.
+
 */
+
+
+
+
 
 
 app.get('/', function (req, res) {
@@ -200,7 +208,7 @@ app.post('/', function (req, res) {
                     }
                     else {
 
-                      var URL3 = 'https://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/v' + matchListVersion + '/matchlist/by-summoner/' + summonerID + '?rankedQueues=RANKED_SOLO_5x5&beginIndex=0&endIndex=1&api_key=' + API_KEY;
+                      var URL3 = 'https://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/v' + matchListVersion + '/matchlist/by-summoner/' + summonerID + '?rankedQueues=TEAM_BUILDER_DRAFT_RANKED_5x5&beginIndex=0&endIndex=1&api_key=' + API_KEY;
                       makeRequest(URL3, function(code, resp) {
                         if (code != -1) {
                           if (code == 404) {
@@ -335,7 +343,7 @@ app.post('/notify',function(req,res) {
 
                   }
                   else {
-                    var URL3 = 'https://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/v' + matchListVersion + '/matchlist/by-summoner/' + summonerID + '?rankedQueues=RANKED_SOLO_5x5&beginIndex=0&endIndex=1&api_key=' + API_KEY;
+                    var URL3 = 'https://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/v' + matchListVersion + '/matchlist/by-summoner/' + summonerID + '?rankedQueues=TEAM_BUILDER_DRAFT_RANKED_5x5&beginIndex=0&endIndex=1&api_key=' + API_KEY;
                     makeRequest(URL3, function(code, resp) {
                       switch (code) {
                         case -1:
@@ -475,7 +483,7 @@ function decayCheck(id, region, callback){
     switch(code) {
       case -1:
         var summonerTier = resp[id]['0']['tier'];
-        var URL2 = 'https://' + region + '.api.pvp.net/api/lol/' + region + '/v' + matchListVersion + '/matchlist/by-summoner/' + id + '?rankedQueues=RANKED_SOLO_5x5&beginIndex=0&endIndex=1&api_key=' + API_KEY;
+        var URL2 = 'https://' + region + '.api.pvp.net/api/lol/' + region + '/v' + matchListVersion + '/matchlist/by-summoner/' + id + '?rankedQueues=TEAM_BUILDER_DRAFT_RANKED_5x5&beginIndex=0&endIndex=1&api_key=' + API_KEY;
         //console.log(URL2);
         makeRequest(URL2, function(code, resp) {
           switch (code) {
@@ -512,7 +520,7 @@ function decayCheck(id, region, callback){
 
   });
 
-  var URL2 = 'https://' + region + '.api.pvp.net/api/lol/' + region + '/v' + matchListVersion + '/matchlist/by-summoner/' + id + '?rankedQueues=RANKED_SOLO_5x5&beginIndex=0&endIndex=1&api_key=' + API_KEY;
+  var URL2 = 'https://' + region + '.api.pvp.net/api/lol/' + region + '/v' + matchListVersion + '/matchlist/by-summoner/' + id + '?rankedQueues=TEAM_BUILDER_DRAFT_RANKED_5x5&beginIndex=0&endIndex=1&api_key=' + API_KEY;
   makeRequest(URL2, function(code, resp) {
 
 
