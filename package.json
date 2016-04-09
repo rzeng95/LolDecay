@@ -3,21 +3,21 @@
   "author": "Roland Zeng <roland.zeng@gmail.com>",
   "version": "0.0.1",
   "description": "Returns days until decay for League of Legends account",
-  "dependencies":
-  {
-    "request": "latest",
-    "express": "latest",
-    "jade": "latest",
+  "dependencies": {
+    "async": "^1.5.2",
     "body-parser": "latest",
+    "cron": "latest",
+    "express": "latest",
+    "iconv-lite": "latest",
+    "jade": "latest",
+    "limiter": "latest",
     "moment": "latest",
     "moment-range": "latest",
-    "limiter": "latest",
-    "iconv-lite": "latest",
-    "nodemailer": "latest",
     "mongoose": "latest",
-    "cron": "latest"
+    "nodemailer": "latest",
+    "request": "latest"
   },
   "engines": {
-	  "node": "0.12.7"
+    "node": "0.12.7"
   }
 }

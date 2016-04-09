@@ -8,7 +8,6 @@ app.use(express.static('public'));
 
 var CronJob = require('cron').CronJob;
 
-
 var RateLimiter = require('limiter').RateLimiter;
 var limiter = new RateLimiter(1, 120);
 
@@ -16,7 +15,6 @@ var moment = require('moment');
 require('moment-range');
 
 var iconv = require('iconv-lite');
-
 var request = require('request');
 var defaultImg = 'http://probablyprogramming.com/wp-content/uploads/2009/03/handtinytrans.gif';
 var img = defaultImg;
@@ -26,6 +24,9 @@ var CREDENTIALS = process.env.credentials;
 mongoose.connect('mongodb://' + CREDENTIALS + '@ds057204.mongolab.com:57204/loldecay-db');
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
+
+var async = require('async');
+
 
 //DATABASE SCHEMA SETUP
 var PlayerSchema = mongoose.Schema({
@@ -81,7 +82,27 @@ app.get('/', function (req, res) {
 
 app.post('/', function (req, res) {
 
-  var NAME = req.body.input_summoner;
+    var NAME = req.body.input_summoner;
+/*
+    // First, make sure the name doens't consist of any invalid characters
+    if (/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/.test(NAME) || NAME == "") {
+        message = "Please enter valid summoner name";
+        res.render('index', {o_img:defaultImg, o_msg:message});
+    }
+    else {
+        // If in here, then begin searching for name
+        async.waterfall([
+            function getValidUsername(callback){
+
+            },
+            function WrapInLimiter
+
+        ], function(err,res){
+
+        }); // End async waterfall
+
+    } // End else statement for character name validation
+*/    
 
   if (/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/.test(NAME) || NAME == "") {
     message = "Please enter valid summoner name";
