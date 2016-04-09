@@ -83,7 +83,9 @@ app.get('/', function (req, res) {
 app.post('/', function (req, res) {
 
     var NAME = req.body.input_summoner;
-/*
+    var REGION = req.body.input_region;
+    var message;
+
     // First, make sure the name doens't consist of any invalid characters
     if (/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/.test(NAME) || NAME == "") {
         message = "Please enter valid summoner name";
@@ -91,213 +93,241 @@ app.post('/', function (req, res) {
     }
     else {
         // If in here, then begin searching for name
-        async.waterfall([
-            function getValidUsername(callback){
 
-            },
-            function WrapInLimiter
+        // Wrap this whole thing in limiter checker
+        limiter.removeTokens(1, function() {
+            async.waterfall([
+                function cleanUpUsername(callback){
+                    NAME = NAME.toLowerCase().replace(/\s+/g, '');
 
-        ], function(err,res){
+                    var str = '%';
+                    var buf = iconv.encode(NAME, 'utf-8');
+                    for (i = 0; i < buf.length; i++) {
 
-        }); // End async waterfall
-
-    } // End else statement for character name validation
-*/    
-
-  if (/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/.test(NAME) || NAME == "") {
-    message = "Please enter valid summoner name";
-    res.render('index', {o_img:defaultImg, o_msg:message});
-  }
-
-  else {
-
-    limiter.removeTokens(1, function() {
-      NAME = NAME.toLowerCase().replace(/\s+/g, '');
-
-      var str = '%';
-      var buf = iconv.encode(NAME, 'utf-8');
-      for (i = 0; i < buf.length; i++) {
-
-        var hexstr = buf[i].toString(16);
-        str += hexstr;
-        if (i != buf.length-1) {str += '%'};
-      }
-      str = str.toUpperCase();
-      var message;
-
-      var URL0 = 'https://ddragon.leagueoflegends.com/realms/na.json'
-      makeRequest(URL0, function(code,resp){
-
-        if (code != -1) {
-          message = 'Error! Something wrong happened with ddragon static files site'
-          res.render('index', {o_img:defaultImg, o_msg:message})
-        }
-        else {
-          var profileIconVersion = resp['n']['profileicon'];
-
-          var REGION = req.body.input_region;
-          var URL1 = 'https://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/v' + summonerByNameVersion + '/summoner/by-name/' + str + '?api_key=' + API_KEY;
-
-          makeRequest(URL1, function(code, resp) {
-            if (code != -1) {
-              if (code == 400) {
-                  message = "[1] Error 400: Bad request made. Whoops...";
-              }
-              else if (code == 401) {
-                message = "[1] Out-of-date API key. Whoops...";
-              }
-              else if (code == 404) {
-                message = "Could not find summoner!";
-              }
-              else if (code == 429) {
-                message = "Rate limit exceeded! Whoops...";
-              }
-              else if (code == 500) {
-                message = "[1] Error 500 : Internal issues with Riot's API servers. Try again in a few minutes.";
-              }
-              else if (code == 503) {
-                message = "[1] Error 503 : Riot's API servers unavailable. Try again in a few minutes.";
-              }
-              else {
-                message = "Unexpected error (1) : " + code;
-              }
-              res.render('index', {o_img:defaultImg, o_msg:message});
-            }
-            else {
-              if (typeof(resp[NAME]) === 'undefined')
-                res.render('index', {o_img:defaultImg, o_msg:'Could not find summoner! Perhaps recent name change?'});
-              else {
-
-                var summonerName = resp[NAME]['name'];
-                var summonerNameRegion = summonerName + '     ' + '[' + REGION.toUpperCase() + ']';
-                var summonerID = resp[NAME]['id'];
-                var summonerIcon = resp[NAME]['profileIconId'];
-
-                img = "http://ddragon.leagueoflegends.com/cdn/" + profileIconVersion + "/img/profileicon/" + summonerIcon + ".png";
-                //console.log(summonerID);
-                var URL2 = 'https://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/v' + leagueVersion + '/league/by-summoner/' + summonerID + '/entry?api_key=' + API_KEY;
-                makeRequest(URL2, function(code, resp){
-
-                  if (code != -1) {
-                    if (code == 400) {
-                      message = "[2] Error 400: Bad request made. Whoops...";
-                      res.render('index', {o_img:defaultImg, o_msg:message});
+                    var hexstr = buf[i].toString(16);
+                    str += hexstr;
+                    if (i != buf.length-1) {str += '%'};
                     }
-                    else if (code == 401) {
-                      message = "[2] Error 401: Bad API key. Whoops...";
-                      res.render('index', {o_img:defaultImg, o_msg:message});
-                    }
+                    str = str.toUpperCase();
 
-                    else if (code == 404) {
-                      message = "You don\'t need to worry about solo queue decay!";
-                      res.render('index', {o_img:img, o_name:summonerNameRegion, o_rank:'Unranked', o_msg:message});
-                    }
-                    else if (code == 429) {
-                      message = "Rate limit exceeded! Whoops...";
-                      res.render('index', {o_img:defaultImg, o_msg:message});
-                    }
-                    else if (code == 500) {
-                      message = "[2] Error 500 : Internal issues with Riot's API servers. Try again in a few minutes.";
-                      res.render('index', {o_img:defaultImg, o_msg:message});
-                    }
-                    else if (code == 503) {
-                      message = "[2] Error 503 : Riot's API servers unavailable. Try again in a few minutes.";
-                      res.render('index', {o_img:defaultImg, o_msg:message});
-                    }
-                    else {
-                      message = "Unexpected error (2) : " + code;
-                      res.render('index', {o_img:img, o_msg:message});
-                    }
-                  }
-                  else {
+                    var cleanedName = str;
+                    console.log("Cleaned Name: " + cleanedName);
 
-                    var summonerTier = resp[summonerID]['0']['tier'];
-                    var summonerDivision = resp[summonerID]['0']['entries']['0']['division'];
-                    var summonerLP = resp[summonerID]['0']['entries']['0']['leaguePoints'];
-                    var summonerRank = summonerTier + ' ' + summonerDivision + ' ' + summonerLP + ' LP';
+                    // The above code will turn the input, for example, "Vanila", into corresponding utf-8 encoding
+                    // Thus, cleanedName will return something like: %76%61%6E%69%6C%61
+                    // This feature was added to allow for korean character recognition, since all input characters get converted to standard utf-8
 
-                    var summonerPlayerOrTeamName = resp[summonerID]['0']['entries']['0']['playerOrTeamName'];
-                    if (summonerPlayerOrTeamName != summonerName) {
-                      summonerRank = 'Unranked';
-                      message = 'You don\'t need to worry about solo queue decay!';
-                      res.render('index', {o_img:img, o_name:summonerNameRegion, o_rank:summonerRank, o_msg:message});
-                    }
-                    else if (summonerTier == "BRONZE" || summonerTier == "SILVER" || summonerTier == "GOLD" ) {
-                      message = 'Bronze, Silver, and Gold accounts do not decay.';
-                      res.render('index', {o_img:img, o_name:summonerNameRegion, o_rank:summonerRank, o_msg:message});
+                    callback(null, cleanedName);
+                }, // end of clean up username
+                function getProfileImageSet(cleanedName, callback){
+                    console.log("getting profile image set");
+                    var URL0 = 'https://ddragon.leagueoflegends.com/realms/na.json'
 
-                    }
-                    else {
-
-                      var URL3 = 'https://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/v' + matchListVersion + '/matchlist/by-summoner/' + summonerID + '?rankedQueues=TEAM_BUILDER_DRAFT_RANKED_5x5&beginIndex=0&endIndex=1&api_key=' + API_KEY;
-                      makeRequest(URL3, function(code, resp) {
+                    makeRequest(URL0, function(code,resp){
                         if (code != -1) {
-                          if (code == 404) {
-                            message = "No solo queue games found!";
-                            res.render('index', {o_img:img, o_name:summonerNameRegion, o_msg:message});
+                            message = 'Error! Something wrong happened with ddragon static files site'
+                            res.render('index', {o_img:defaultImg, o_msg:message})
+                            callback("fail 1 : " + message, null);
+                        }
+                        else {
+                            var profileIconVersion = resp['n']['profileicon'];
+                            // Need to fetch the latest profile image set from ddragon static file base, so we can get updated profile icons.
+                            callback(null, cleanedName, profileIconVersion);
+                        }
+                    });
+                }, //end of get profile image set
+                function getSummonerByName(cleanedName, profileIconVersion, callback) {
+                    console.log("Getting Summoner By Name");
+                    console.log("profileIconVersion: " + profileIconVersion);
+                    var URL1 = 'https://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/v' + summonerByNameVersion + '/summoner/by-name/' + cleanedName + '?api_key=' + API_KEY;
+                    console.log("URL1: " + URL1);
+
+                    makeRequest(URL1, function(code,resp) {
+                        if (code != -1) {
+                          if (code == 400) {
+                              message = "[1] Error 400: Bad request made. Whoops...";
+                          }
+                          else if (code == 401) {
+                            message = "[1] Out-of-date API key. Whoops...";
+                          }
+                          else if (code == 404) {
+                            message = "Could not find summoner!";
                           }
                           else if (code == 429) {
                             message = "Rate limit exceeded! Whoops...";
-                            res.render('index', {o_img:defaultImg, o_name:summonerNameRegion, o_msg:message});
                           }
                           else if (code == 500) {
-                            message = "[3] Error 500 : Internal issues with Riot's API servers. Try again in a few minutes.";
-                            res.render('index', {o_img:defaultImg, o_msg:message});
+                            message = "[1] Error 500 : Internal issues with Riot's API servers. Try again in a few minutes.";
                           }
                           else if (code == 503) {
-                            message = "[3] Error 503 : Riot's API servers unavailable. Try again in a few minutes.";
-                            res.render('index', {o_img:defaultImg, o_msg:message});
+                            message = "[1] Error 503 : Riot's API servers unavailable. Try again in a few minutes.";
                           }
-
                           else {
-                            message = "Unexpected error (3) : " + code;
-                            res.render('index', {o_img:img, o_name:summonerNameRegion, o_msg:message});
+                            message = "Unexpected error (1) : " + code;
                           }
+                          res.render('index', {o_img:defaultImg, o_msg:message});
+                          callback("fail 2 : " + message, null);
                         }
                         else {
+                            if (typeof(resp[NAME]) === 'undefined')
+                                res.render('index', {o_img:defaultImg, o_msg:'Could not find summoner! Perhaps recent name change?'});
+                            else {
+                                console.log("Got valid name: here we go!");
+                                callback(null, resp, profileIconVersion);
 
-                          var lastPlayedDate = resp['matches'][0]['timestamp'];
+                            }
+                        }
+                    }) //end of make request
 
-                          var date = new Date (lastPlayedDate);
-                          var date2 = new Date ();
+                }, // end of get summoner by name
+                function getSummonerRank(blob, profileIconVersion, callback) {
+                    console.log("Getting Summoner Rank Now");
 
-                          var daterange = moment.range(date, date2);
-                          var diff = daterange.diff('days');
-                          var daysTillDecay;
-                          if (summonerTier == "MASTER" || summonerTier == "CHALLENGER") {
-                            daysTillDecay = 9 - diff;
-                          }
-                          else {
-                            daysTillDecay = 27 - diff;
-                          }
+                    // Note: blob is just "resp" from earlier: it contains a json string looking like this:
+                    //{ vanila:
+                    //    { id: 40985835,
+                    //    name: 'Vanila',
+                    //    profileIconId: 983,
+                    //    summonerLevel: 30,
+                    //    revisionDate: 1459992782000 } }
+
+                    console.log(blob);
+                    var summonerName = blob[NAME]['name'];
+                    var summonerNameRegion = summonerName + '     ' + '[' + REGION.toUpperCase() + ']';
+                    var summonerID = blob[NAME]['id'];
+                    var summonerIcon = blob[NAME]['profileIconId'];
+                    img = "http://ddragon.leagueoflegends.com/cdn/" + profileIconVersion + "/img/profileicon/" + summonerIcon + ".png";
+
+                    var URL2 = 'https://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/v' + leagueVersion + '/league/by-summoner/' + summonerID + '/entry?api_key=' + API_KEY;
+
+                    makeRequest(URL2, function(code, resp){
+                        if (code != -1) {
+                            if (code == 400) {
+                            message = "[2] Error 400: Bad request made. Whoops...";
+                            res.render('index', {o_img:defaultImg, o_msg:message});
+                            }
+                            else if (code == 401) {
+                            message = "[2] Error 401: Bad API key. Whoops...";
+                            res.render('index', {o_img:defaultImg, o_msg:message});
+                            }
+                            else if (code == 404) {
+                            message = "You don\'t need to worry about solo queue decay!";
+                            res.render('index', {o_img:img, o_name:summonerNameRegion, o_rank:'Unranked', o_msg:message});
+                            }
+                            else if (code == 429) {
+                            message = "Rate limit exceeded! Whoops...";
+                            res.render('index', {o_img:defaultImg, o_msg:message});
+                            }
+                            else if (code == 500) {
+                            message = "[2] Error 500 : Internal issues with Riot's API servers. Try again in a few minutes.";
+                            res.render('index', {o_img:defaultImg, o_msg:message});
+                            }
+                            else if (code == 503) {
+                            message = "[2] Error 503 : Riot's API servers unavailable. Try again in a few minutes.";
+                            res.render('index', {o_img:defaultImg, o_msg:message});
+                            }
+                            else {
+                            message = "Unexpected error (2) : " + code;
+                            res.render('index', {o_img:img, o_msg:message});
+                            }
+                            callback("fail 3 : " + message, null);
+                        }
+                        else {
+                            console.log("Display Rank!");
+                            var summonerTier = resp[summonerID]['0']['tier'];
+                            var summonerDivision = resp[summonerID]['0']['entries']['0']['division'];
+                            var summonerLP = resp[summonerID]['0']['entries']['0']['leaguePoints'];
+                            var summonerRank = summonerTier + ' ' + summonerDivision + ' ' + summonerLP + ' LP';
+                            var summonerPlayerOrTeamName = resp[summonerID]['0']['entries']['0']['playerOrTeamName'];
+                            if (summonerPlayerOrTeamName != summonerName) {
+                                summonerRank = 'Unranked';
+                                message = 'You don\'t need to worry about solo queue decay!';
+                                res.render('index', {o_img:img, o_name:summonerNameRegion, o_rank:summonerRank, o_msg:message});
+                                callback("fail 4 : " + message, null);
+                            }
+                            else if (summonerTier == "BRONZE" || summonerTier == "SILVER" || summonerTier == "GOLD" ) {
+                                message = 'Bronze, Silver, and Gold accounts do not decay.';
+                                res.render('index', {o_img:img, o_name:summonerNameRegion, o_rank:summonerRank, o_msg:message});
+                                callback("fail 4 : " + message, null);
+                            }
+                            else {
+                                // If here, we have a valid ranked account that is capable of decaying
+                                var URL3 = 'https://' + REGION + '.api.pvp.net/api/lol/' + REGION + '/v' + matchListVersion + '/matchlist/by-summoner/' + summonerID + '?rankedQueues=TEAM_BUILDER_DRAFT_RANKED_5x5&beginIndex=0&endIndex=1&api_key=' + API_KEY;
+                                callback(null, URL3, summonerTier, img, summonerNameRegion, summonerRank);
+                            }
+                        }
+
+                    }); //end of make request 2
+
+                }, // end of get summoner rank
+                function checkSummonerDecay(URL3, summonerTier, img, summonerNameRegion, summonerRank, callback) {
+
+                    makeRequest(URL3, function(code, resp) {
+                        if (code != -1) {
+                            if (code == 404) {
+                                message = "No solo queue games found!";
+                                res.render('index', {o_img:img, o_name:summonerNameRegion, o_msg:message});
+                            }
+                            else if (code == 429) {
+                                message = "Rate limit exceeded! Whoops...";
+                                res.render('index', {o_img:defaultImg, o_name:summonerNameRegion, o_msg:message});
+                            }
+                            else if (code == 500) {
+                                message = "[3] Error 500 : Internal issues with Riot's API servers. Try again in a few minutes.";
+                                res.render('index', {o_img:defaultImg, o_msg:message});
+                            }
+                            else if (code == 503) {
+                                message = "[3] Error 503 : Riot's API servers unavailable. Try again in a few minutes.";
+                                res.render('index', {o_img:defaultImg, o_msg:message});
+                            }
+                            else {
+                                message = "Unexpected error (3) : " + code;
+                                res.render('index', {o_img:img, o_name:summonerNameRegion, o_msg:message});
+                            }
+                            callback("fail 5 : " + message);
+                        }
+                        else {
+                            var lastPlayedDate = resp['matches'][0]['timestamp'];
+
+                            var date = new Date (lastPlayedDate);
+                            var date2 = new Date ();
+
+                            var daterange = moment.range(date, date2);
+                            var diff = daterange.diff('days');
+                            var daysTillDecay;
+                            if (summonerTier == "MASTER" || summonerTier == "CHALLENGER") {
+                              daysTillDecay = 9 - diff;
+                            }
+                            else {
+                              daysTillDecay = 27 - diff;
+                            }
+
+                            if (daysTillDecay > 0 && daysTillDecay < 2) {
+                              message = "You are within 2 days of decaying. Play now!";
+                            }
+                            else if (daysTillDecay < 0) {
+                              message = "You are decaying. Oh no!";
+                            }
+                            else {
+                              message = daysTillDecay + " days until you decay!";
+                            }
+                            res.render('index', {o_img:img, o_name:summonerNameRegion, o_rank:summonerRank, o_msg:message});
+
+                        }
+                    });
+
+                }
+            ], function(err,res){
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+            }); // End async waterfall
+        }); // End limiter wrapping
+    } // End else statement for character name validation
 
 
 
-                          if (daysTillDecay > 0 && daysTillDecay < 2) {
-                            message = "You are within 2 days of decaying. Play now!";
-                          }
-                          else if (daysTillDecay < 0) {
-                            message = "You are decaying. Oh no!";
-                          }
-                          else {
-                            message = daysTillDecay + " days until you decay!";
-                          }
-                          res.render('index', {o_img:img, o_name:summonerNameRegion, o_rank:summonerRank, o_msg:message});
-
-                        } //end url3 else statement
-                      }); //end url3 makeRequest
-                    } //end check for player or team else statement
-
-                  } //end url2 else statement
-                }); //end url2 makeRequest
-              } //end else statement for checking for recently-changed names
-            } //end url1 else statement
-
-          }); //end url1 makeRequest
-        }//end makeRequest0 else statement
-      })//end makeRequest0
-    }); //end rate limiting
-  } //end special characters check else statement
 }); //end app.post
 
 app.get('/changelog',function (req, res) {
