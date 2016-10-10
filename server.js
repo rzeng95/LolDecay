@@ -45,8 +45,7 @@ var summonerByNameVersion = '1.4';
 var leagueVersion='2.5';
 var matchListVersion = '2.2';
 
-
-var API_KEY = process.env.apikey;
+var API_KEY = process.env.apikey || require('./SECRET')['API_KEY'];
 
 var nodemailer = require('nodemailer')
 var transporter = nodemailer.createTransport({
