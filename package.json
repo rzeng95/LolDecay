@@ -4,21 +4,11 @@
   "version": "0.0.1",
   "description": "Returns days until decay for League of Legends account",
   "dependencies": {
-    "async": "^1.5.2",
-    "body-parser": "latest",
-    "cron": "latest",
-    "express": "latest",
-    "iconv-lite": "latest",
-    "jade": "latest",
-    "limiter": "latest",
-    "moment": "latest",
-    "moment-range": "latest",
-    "mongoose": "latest",
-    "nodemailer": "latest",
-    "request": "latest"
-  },
-  "engines": {
-    "node": "0.12.7"
+    "async": "^2.1.4",
+    "moment": "^2.17.1",
+    "moment-range": "^2.2.0",
+    "request": "^2.79.0",
+    "utf8": "^2.1.2"
   },
   "repository": {
     "type": "git",

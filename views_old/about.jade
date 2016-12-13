@@ -1,0 +1,20 @@
+extends ./infopages.jade
+
+block title
+  h1(class="ui header" style="font-size:30px;") About
+  
+block message 
+  
+  h3(class="ui header") Created by Roland Zeng
+  p(style="font-size:16") Got suggestions / bugs / feedback? In-game username: #[span(style="font-weight:bold") Vanila]
+
+  p(style="font-size:18") #[span(style="font-style: italic") LolDecay] finds the date of your most-recent ranked solo/duo 5v5 game. Then, it subtracts that date from the current date to figure out how many days have elapsed since then. This value is then subtracted from 28 (for platinum and diamond accounts) or 10 (for master and challenger accounts) to determine how many days an account has left until it decays.
+  
+  p(style="font-size:18") #[span(style="font-style: italic") LolDecay Notify] runs a decay check on all stored accounts every night at midnight. For accounts that are within 5 days of decaying or decaying, an email will be sent. Users can opt out of email notifications by clicking the link provided by each email.
+  
+  p(style="font-size:18") Source code: #[a(href="https://github.com/rzeng95/LolDecay" target="_blank") Here]
+  
+  h3(class="ui header") Legal
+  p(style="font-size:18") LolDecay isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.
+  br
+  br
