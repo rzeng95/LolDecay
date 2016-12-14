@@ -19,10 +19,7 @@ let json;
 module.exports = {
 
     // ==============================
-    // INPUT: an input region and name
-    // FUNCTION: the name gets cleaned & utf8-encoded
-    // ERROR: return error if name is invalid string
-    // OUTPUT: a callback of the form (err, region, cleanedName)
+    // Clean the input name and utf8 encode it
     // ==============================
     processName: function(region, name, callback) {
         name = name.toLowerCase().replace(/\s+/g, '');
@@ -36,10 +33,7 @@ module.exports = {
     },
 
     // ==============================
-    // INPUT: an input region and utf8-encoded name
-    // FUNCTION: these inputs get sent into the /summoner/by-name endpoint
-    // ERROR: return error (with correct code) if name does not exist
-    // OUTPUT: a callback of the form (err, region, summonerID, display name, profile ID)
+    // Use summoner/by-name Riot API endpoint to look up summoner ID
     // ==============================
     getSummonerID: function(region, name, utf8name, callback) {
         version = constants['SUMMONER_BY_NAME_VERSION'];
@@ -70,10 +64,7 @@ module.exports = {
 
 
     // ==============================
-    // INPUT: summoner ID, display name, profileID
-    // FUNCTION: get DDragon version, convert profileID to profileURL
-    // ERROR: return error (with correct code) if ddragon fails
-    // OUTPUT: a callback of the form (err, summonerID)
+    // Get the latest version of DDragon (static file repo) to find the correct profile pic URL
     // ==============================
     getDDragonVersion: function(accountType, region, summonerID, displayName, profileID, callback) {
         url = 'https://ddragon.leagueoflegends.com/realms/na.json';
@@ -90,10 +81,7 @@ module.exports = {
     },
 
     // ==============================
-    // INPUT: accountType, region, summoner ID, display name, profile URL
-    // FUNCTION: these inputs get sent into the /league/by-summoner/entry endpoint
-    // ERROR: return error (with correct code) for nonranked accounts
-    // OUTPUT: a callback of the form (err, summonerID)
+    // Find the summoner's rank (tier, division, LP)
     // ==============================
     getSummonerRank: function(accountType, region, summonerID, displayName, profileURL, callback) {
         version = constants['LEAGUE_BY_SUMMONER_VERSION'];
@@ -129,7 +117,9 @@ module.exports = {
         }); //end limiter
     },
 
-
+    // ==============================
+    // Find the last solo queue game played, and calculate days till decay 
+    // ==============================
     getSummonerHistory: function(accountType, region, summonerID, displayName, profileURL, tier, division, lp, callback) {
 
         if (!accountType) {
