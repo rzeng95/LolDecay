@@ -2,6 +2,7 @@
 
 const express = require('express');
 const app = express();
+const fallback = require('express-history-api-fallback');
 const path = require('path');
 const PORT = process.env.PORT || 3000;
 
@@ -19,45 +20,14 @@ require('./lookup')(app);
 
 app.use(express.static(path.resolve(__dirname, '..', 'build')));
 
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/build/index.html');
+//app.use(fallback(__dirname + '../build/index.html'));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '..', 'build', 'index.html'));
 });
+
+
 
 app.listen(PORT, () => {
     console.log(`App listening on port ${PORT}!`);
 });
-// const async = require('async');
-//
-// const lookup = require('./lookup');
-// const errorHandler = require('./errorHandler');
-//
-//
-//
-// const inputRegion = 'na';
-// const inputName = 'dyrus';
-//
-// async.waterfall([
-//     async.apply(lookup.processName, inputRegion, inputName),
-//     lookup.getSummonerID,
-//     lookup.getDDragonVersion,
-//     lookup.getSummonerRank,
-//     lookup.getSummonerHistory
-// ], (err, accountType, region, summonerID, displayName, profileURL, tier, division, lp, decayMessage) => {
-//     if (err) {
-//         console.log( errorHandler(err) );
-//     } else {
-//
-//         console.log('accountType: ' + accountType);
-//         console.log('region: ' + region);
-//         console.log('summonerID: ' + summonerID);
-//         console.log('displayName: ' + displayName);
-//         console.log('profileURL: ' + profileURL);
-//         console.log('tier: ' + tier);
-//         console.log('division: ' + division);
-//         console.log('lp: ' + lp);
-//         console.log('decay message: ' + decayMessage);
-//         // switch (accountType) {
-//         //     case
-//         // }
-//     }
-// })
