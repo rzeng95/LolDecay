@@ -27,11 +27,11 @@ module.exports = {
     processName: function(region, name, callback) {
         name = name.toLowerCase().replace(/\s+/g, '');
         name = name.replace(/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/gi, '');
-        name = utf8.encode(name);
+        let utf8name = utf8.encode(name);
         if (!name) {
             callback('Invalid Name');
         } else {
-            callback(null, region, name);
+            callback(null, region, name, utf8name);
         }
     },
 
@@ -41,14 +41,16 @@ module.exports = {
     // ERROR: return error (with correct code) if name does not exist
     // OUTPUT: a callback of the form (err, region, summonerID, display name, profile ID)
     // ==============================
-    getSummonerID: function(region, utf8name, callback) {
+    getSummonerID: function(region, name, utf8name, callback) {
         version = constants['SUMMONER_BY_NAME_VERSION'];
         url = `https://${region}.api.pvp.net/api/lol/${region}/v${version}` + `/summoner/by-name/${utf8name}?api_key=${RIOT_API_KEY}`;
 
         limiter.removeTokens(1, (err, remainingRequests) => {
             request(url, (err, res, output) => {
                 if (!err && res.statusCode === 200) {
-                    json = JSON.parse(output)[utf8name];
+                    json = JSON.parse(output)[name];
+                    console.log('hello')
+                    console.log(json);
                     let displayName = `${json['name']} [${region.toUpperCase()}]`;
                     if (json['summonerLevel'] < 30) {
                         callback(null, 'sub30', region, json['id'], displayName, json['profileIconId']);
@@ -170,7 +172,7 @@ module.exports = {
                         }
                     }
                 }); //end request
-            }); //end limiter 
+            }); //end limiter
         } else {
             callback(null, accountType, region, summonerID, displayName, profileURL, tier, division, lp, null);
         }
