@@ -1,0 +1,30 @@
+extends ./infopages.jade
+
+block title
+  h1(class="ui header" style="font-size:30px;") Changelog
+  
+block message 
+
+  h3(class="ui header") May 9 2016
+  p(style="font-size:18") Internal refactor of base code. Replaced callback hell with async waterfall. Performance should be the same but code will be much cleaner. Please contact me if you see bugs (See About for contact info).
+
+  h3(class="ui header") Nov 21 2015
+  p(style="font-size:18") Fixed bug where recently-changed names (the name searched didn't match the account's current name) was crashing the site. 
+  p(style="font-size:18") Implemented "Notify" feature where users can enter their email to be alerted when their account reaches a low decay time.
+  
+  h3(class="ui header") Nov 10 2015
+  p(style="font-size:18") Fixed bug where new profile icons weren't being displayed correctly. Now, LolDecay correctly pulls the latest version of profile icon image data.
+  
+  h3(class="ui header") Oct 20 2015 
+  p(style="font-size:18") Added error messages for "Error 500" and "Error 503" (Service down, service unavailable).
+  
+  h3(class="ui header") Sept 26 2015 
+  p(style="font-size:18") Added Korean character recognition.
+  
+  h3(class="ui header") Sept 24 2015
+  p(style="font-size:18") Fixed bug where decay rates for challenger and master accounts were being calculated using decay rates of platinum and diamond accounts.
+  
+  h3(class="ui header") Sept 22 2015
+  p(style="font-size:18") Upgraded from development key to production key.
+  br
+  br

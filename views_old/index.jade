@@ -1,0 +1,40 @@
+extends ./base.jade
+
+block content 
+  main(class="ui page grid")
+    div(class="row")
+      div(class="center aligned starter column")
+        br
+        form(method="post")
+          div(class="ui form")
+            div(class="ui center aligned grid")
+              div(class="row")
+                div(class="black two wide column" style="background-color: #1B1C1D;")
+                  select(class="ui fluid dropdown" name="input_region")
+                    option(value="na") NA
+                    option(value="euw") EUW
+                    option(value="eune") EUNE
+                    option(value="kr") KR
+                    option(value="br") BR
+                    option(value="tr") TR
+                    option(value="ru") RU
+                    option(value="lan") LAN
+                    option(value="las") LAS
+                    option(value="oce") OCE
+                div(class="black four wide column")
+                  input(type="text" name="input_summoner" placeholder="Summoner Name")
+                div(class="black two wide column")
+                  button(class="ui button" type="submit") Search  
+  
+
+        div(class="ui center aligned grid")
+          br
+          h2!= o_msg
+          br
+          div(class="row")
+            div(class="two wide column")
+              img(src="#{o_img}")
+                
+            div(class="left aligned six wide column")
+              h2!= o_name
+              h3!= o_rank   
